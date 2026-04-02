@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -19,6 +20,19 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def _find_demo_dir() -> Path:
+    """Locate demo/ directory in development or container."""
+    candidates = [
+        Path(__file__).resolve().parent.parent.parent.parent.parent / "demo",
+        Path("/app/demo"),
+        Path.cwd() / "demo",
+    ]
+    for p in candidates:
+        if p.is_dir():
+            return p
+    return candidates[0]
+
+
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Upload page."""
@@ -31,6 +45,56 @@ async def methods(request: Request):
     """Methods page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(request, "methods.html")
+
+
+@router.post("/demo", response_class=HTMLResponse)
+async def demo(request: Request):
+    """Run analysis on the built-in demo case."""
+    templates = request.app.state.templates
+    results_store = request.app.state.results
+
+    demo_dir = _find_demo_dir()
+    maf_path = demo_dir / "demo_sample.maf"
+    seg_path = demo_dir / "demo_sample.seg"
+
+    if not maf_path.exists() or not seg_path.exists():
+        return templates.TemplateResponse(
+            request,
+            "index.html",
+            {"error": "Demo files not found."},
+            status_code=404,
+        )
+
+    try:
+        maf_df = parse_maf(maf_path)
+        seg_df = parse_seg(seg_path)
+        params = AnalysisParams()
+        result = analyze_sample(maf_df, seg_df, params=params)
+
+        try:
+            fig = create_cna_plot(seg_df, result)
+            plot_html = fig_to_html_div(fig)
+        except Exception:
+            logger.warning("Could not generate CNA plot", exc_info=True)
+            plot_html = "<p>CNA plot unavailable.</p>"
+
+        result_data = result_to_dict(result)
+        result_data["_plot_html"] = plot_html
+        rid = results_store.put(result_data)
+
+        return templates.TemplateResponse(
+            request,
+            "report.html",
+            {"r": result_data, "result_id": rid, "plot_html": plot_html},
+        )
+    except Exception as e:
+        logger.error("Demo analysis failed: %s", e, exc_info=True)
+        return templates.TemplateResponse(
+            request,
+            "index.html",
+            {"error": str(e)},
+            status_code=400,
+        )
 
 
 @router.post("/analyze", response_class=HTMLResponse)
