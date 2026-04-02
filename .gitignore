@@ -27,7 +27,6 @@ htmlcov/
 *.h5ad
 data/genie_v18
 data/external/
-data/oncokb_cancer_genes.tsv
 
 # Generated reports
 *.pdf

@@ -14,7 +14,6 @@ dependencies = [
     "python-multipart>=0.0.9",
     "fpdf2>=2.7",
     "plotly>=5.18",
-    "kaleido>=0.2",
     "httpx>=0.27",
 ]
 
@@ -38,6 +37,7 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
     "marimo>=0.10",
+    "kaleido>=0.2",
 ]
 
 [tool.ruff]
