@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Methods — two-hit{% endblock %}
+{% block content %}
+
+<div class="mp-panel">
+  <p class="mp-eyebrow">Documentation</p>
+  <h1 style="margin-top: var(--mp-space-xs);">Methods</h1>
+
+  <h2 style="margin-top: var(--mp-space-lg);">Overview</h2>
+  <p>
+    <strong>two-hit</strong> integrates somatic mutation data (MAF format) with copy number
+    segment data (SEG format) to identify biallelic inactivation events in tumor suppressor
+    genes and mutation-with-amplification events in oncogenes. Gene roles (oncogene / TSG / both)
+    are derived from the <a href="https://www.oncokb.org/cancerGenes" style="color: var(--mp-accent);">OncoKB cancer gene list</a>.
+  </p>
+
+  <h2 style="margin-top: var(--mp-space-lg);">CNA Thresholds</h2>
+  <table class="gene-table" style="max-width: 500px;">
+    <thead>
+      <tr><th>Category</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Deep deletion</td><td>&lt; -0.5</td><td>Homozygous deletion</td></tr>
+      <tr><td>Deletion / LOH</td><td>&lt; -0.3</td><td>Hemizygous deletion</td></tr>
+      <tr><td>Gain</td><td>&gt; 0.3</td><td>Copy number gain</td></tr>
+      <tr><td>Amplification</td><td>&gt; 0.7</td><td>High-level amplification</td></tr>
+      <tr><td>High VAF</td><td>&gt; 0.7</td><td>Supports LOH</td></tr>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top: var(--mp-space-lg);">Classification Logic</h2>
+
+  <h3 style="margin-top: var(--mp-space-md);">Tumor Suppressor Genes</h3>
+  <table class="gene-table">
+    <thead>
+      <tr><th>Status</th><th>Criteria</th><th>Confidence</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="status-badge status-homdel">homdel</span></td><td>Deep deletion (seg.mean &lt; -0.5)</td><td>HIGH</td></tr>
+      <tr><td><span class="status-badge status-biallelic_compound_het">compound het</span></td><td>2+ truncating mutations</td><td>HIGH</td></tr>
+      <tr><td><span class="status-badge status-biallelic_mut_loh_high_vaf">mut+LOH high VAF</span></td><td>Mutation + deletion + VAF &gt; 0.7</td><td>HIGH</td></tr>
+      <tr><td><span class="status-badge status-biallelic_mut_loh">mut+LOH</span></td><td>Mutation + deletion</td><td>MEDIUM</td></tr>
+      <tr><td><span class="status-badge status-single_hit_mut">single hit mut</span></td><td>Mutation only</td><td>LOW</td></tr>
+      <tr><td><span class="status-badge status-single_hit_del">single hit del</span></td><td>Deletion only</td><td>LOW</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: var(--mp-space-md);">Oncogenes</h3>
+  <table class="gene-table">
+    <thead>
+      <tr><th>Status</th><th>Criteria</th><th>Confidence</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="status-badge status-mut_amp">mut+amp</span></td><td>Mutation + amplification (seg.mean &gt; 0.7)</td><td>HIGH</td></tr>
+      <tr><td><span class="status-badge status-mut_gain">mut+gain</span></td><td>Mutation + gain (seg.mean &gt; 0.3)</td><td>MEDIUM</td></tr>
+      <tr><td><span class="status-badge status-mut_only">mut only</span></td><td>Mutation without CNA</td><td>LOW</td></tr>
+      <tr><td><span class="status-badge status-amp_only">amp only</span></td><td>Amplification without mutation</td><td>MEDIUM</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: var(--mp-space-md);">Truncating Mutation Types</h3>
+  <p>
+    By default: Nonsense_Mutation, Frame_Shift_Del, Frame_Shift_Ins, Splice_Site,
+    Translation_Start_Site. Splice_Region can optionally be included.
+  </p>
+
+  <h2 style="margin-top: var(--mp-space-lg);">Input Formats</h2>
+  <p>
+    <strong>MAF:</strong> Standard AACR GENIE MAF format (tab-separated). Required columns:
+    Hugo_Symbol, Chromosome, Start_Position, End_Position, Variant_Classification,
+    HGVSp_Short, Tumor_Sample_Barcode. Optional: t_alt_count, t_ref_count for VAF.
+  </p>
+  <p>
+    <strong>SEG:</strong> Standard CBS-style segment format (tab-separated). Required columns:
+    ID, chrom, loc.start, loc.end, seg.mean. Column name matching is case-insensitive.
+  </p>
+</div>
+
+{% endblock %}

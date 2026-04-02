@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Report — {{ r.sample_id }} — two-hit{% endblock %}
+{% block content %}
+
+<!-- Summary panel -->
+<div class="mp-panel">
+  <p class="mp-eyebrow">Analysis report</p>
+  <h1 style="margin-top: var(--mp-space-xs);">{{ r.sample_id }}</h1>
+
+  <div class="summary-stats" style="margin-top: var(--mp-space-md);">
+    <div class="stat">
+      <span class="stat-value">{{ r.total_mutations }}</span>
+      <span class="stat-label">Mutations</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ r.total_genes_with_events }}</span>
+      <span class="stat-label">Genes</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value biallelic">{{ r.biallelic_count }}</span>
+      <span class="stat-label">Biallelic</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value oncogene">{{ r.mut_amp_count }}</span>
+      <span class="stat-label">Mut+Amp</span>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="mp-flex" style="margin-top: var(--mp-space-md); gap: var(--mp-space-sm);">
+    <a href="/results/{{ result_id }}/pdf" class="mp-btn-primary" style="text-decoration: none; font-size: var(--mp-fs-sm);">Download PDF</a>
+    <a href="/results/{{ result_id }}/json" class="mp-btn-secondary" style="text-decoration: none; font-size: var(--mp-fs-sm);" target="_blank">View JSON</a>
+    <a href="/" class="mp-btn-secondary" style="text-decoration: none; font-size: var(--mp-fs-sm);">New analysis</a>
+  </div>
+</div>
+
+<!-- Gene results table -->
+<div class="mp-panel">
+  <h2>Gene Results</h2>
+  <div style="overflow-x: auto; margin-top: var(--mp-space-sm);">
+    <table class="gene-table" id="gene-table">
+      <thead>
+        <tr>
+          <th data-sort="text" class="sortable">Gene</th>
+          <th data-sort="text" class="sortable">Role</th>
+          <th data-sort="num" class="sortable">#Mut</th>
+          <th>Best Mutation</th>
+          <th>CNA</th>
+          <th data-sort="num" class="sortable">seg.mean</th>
+          <th data-sort="num" class="sortable">VAF</th>
+          <th data-sort="text" class="sortable">Status</th>
+          <th data-sort="text" class="sortable">Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in r.gene_results %}
+        <tr>
+          <td><strong>{{ g.hugo_symbol }}</strong></td>
+          <td>{{ g.role }}</td>
+          <td>{{ g.mutations | length }}</td>
+          <td>
+            {% for m in g.mutations %}
+              {% if m.hgvsp_short %}{{ m.hgvsp_short }}{% if not loop.last %}, {% endif %}{% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ g.cna_status }}</td>
+          <td>{% if g.seg_mean is not none %}{{ "%.3f" | format(g.seg_mean) }}{% else %}N/A{% endif %}</td>
+          <td>{% if g.vaf_max is not none %}{{ "%.2f" | format(g.vaf_max) }}{% else %}N/A{% endif %}</td>
+          <td><span class="status-badge status-{{ g.two_hit_status }}">{{ g.two_hit_status | replace("_", " ") }}</span></td>
+          <td><span class="conf-badge conf-{{ g.confidence }}">{{ g.confidence }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CNA plot -->
+<div class="mp-panel">
+  <h2>Genome-wide CNA Plot</h2>
+  <div class="plot-container" style="margin-top: var(--mp-space-sm);">
+    {{ plot_html | safe }}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Simple table sorting
+document.querySelectorAll('.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const table = th.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const idx = Array.from(th.parentNode.children).indexOf(th);
+    const type = th.dataset.sort || 'text';
+    const asc = th.classList.toggle('sort-asc');
+    th.parentNode.querySelectorAll('.sortable').forEach(h => { if (h !== th) h.classList.remove('sort-asc', 'sort-desc'); });
+    if (!asc) th.classList.add('sort-desc');
+
+    rows.sort((a, b) => {
+      let va = a.children[idx].textContent.trim();
+      let vb = b.children[idx].textContent.trim();
+      if (type === 'num') {
+        va = parseFloat(va) || 0;
+        vb = parseFloat(vb) || 0;
+      }
+      const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+      return asc ? cmp : -cmp;
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  });
+});
+</script>
+{% endblock %}

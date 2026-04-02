@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+
+# Data (large files)
+*.h5ad
+data/genie_v18
+data/external/
+data/oncokb_cancer_genes.tsv
+
+# Generated reports
+*.pdf
+
+# uv
+.uv/
+uv.lock
