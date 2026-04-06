@@ -1,4 +1,8 @@
-"""Analysis routes: upload, analyze, report, PDF download."""
+"""Analysis routes: upload, analyze, report, PDF download.
+
+Heavy imports (polars, plotly, fpdf2) are deferred to first request
+to keep idle memory low (~80 MB instead of ~200 MB on Railway).
+"""
 
 from __future__ import annotations
 
@@ -7,13 +11,6 @@ from pathlib import Path
 
 from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-
-from ...analysis import analyze_sample
-from ...io import parse_maf, parse_seg
-from ...models import AnalysisParams
-from ...plot import create_cna_plot, fig_to_html_div
-from ...report import result_to_dict
-from ..pdf import generate_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +28,33 @@ def _find_demo_dir() -> Path:
         if p.is_dir():
             return p
     return candidates[0]
+
+
+def _run_analysis(maf_content: str | Path, seg_content: str | Path, params_kwargs: dict):
+    """Run the analysis pipeline. Imports heavy modules on first call."""
+    from ...analysis import analyze_sample
+    from ...io import parse_maf, parse_seg
+    from ...models import AnalysisParams
+    from ...plot import create_cna_plot, fig_to_html_div
+    from ...report import result_to_dict
+
+    maf_df = parse_maf(maf_content)
+    seg_df = parse_seg(seg_content)
+
+    sample_id = params_kwargs.pop("sample_id", None)
+    params = AnalysisParams(**params_kwargs)
+    result = analyze_sample(maf_df, seg_df, sample_id=sample_id, params=params)
+
+    try:
+        fig = create_cna_plot(seg_df, result)
+        plot_html = fig_to_html_div(fig)
+    except Exception:
+        logger.warning("Could not generate CNA plot", exc_info=True)
+        plot_html = "<p>CNA plot unavailable.</p>"
+
+    result_data = result_to_dict(result)
+    result_data["_plot_html"] = plot_html
+    return result_data, plot_html
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -66,20 +90,7 @@ async def demo(request: Request):
         )
 
     try:
-        maf_df = parse_maf(maf_path)
-        seg_df = parse_seg(seg_path)
-        params = AnalysisParams()
-        result = analyze_sample(maf_df, seg_df, params=params)
-
-        try:
-            fig = create_cna_plot(seg_df, result)
-            plot_html = fig_to_html_div(fig)
-        except Exception:
-            logger.warning("Could not generate CNA plot", exc_info=True)
-            plot_html = "<p>CNA plot unavailable.</p>"
-
-        result_data = result_to_dict(result)
-        result_data["_plot_html"] = plot_html
+        result_data, plot_html = _run_analysis(maf_path, seg_path, {})
         rid = results_store.put(result_data)
 
         return templates.TemplateResponse(
@@ -118,31 +129,19 @@ async def analyze(
         maf_content = (await maf_file.read()).decode("utf-8")
         seg_content = (await seg_file.read()).decode("utf-8")
 
-        maf_df = parse_maf(maf_content)
-        seg_df = parse_seg(seg_content)
-
-        params = AnalysisParams(
-            del_threshold=del_threshold,
-            deep_del_threshold=deep_del_threshold,
-            gain_threshold=gain_threshold,
-            amp_threshold=amp_threshold,
-            vaf_threshold=vaf_threshold,
-            include_splice_region=include_splice_region,
+        result_data, plot_html = _run_analysis(
+            maf_content,
+            seg_content,
+            {
+                "sample_id": sample_id.strip() or None,
+                "del_threshold": del_threshold,
+                "deep_del_threshold": deep_del_threshold,
+                "gain_threshold": gain_threshold,
+                "amp_threshold": amp_threshold,
+                "vaf_threshold": vaf_threshold,
+                "include_splice_region": include_splice_region,
+            },
         )
-
-        sid = sample_id.strip() or None
-        result = analyze_sample(maf_df, seg_df, sample_id=sid, params=params)
-
-        # Generate CNA plot HTML
-        try:
-            fig = create_cna_plot(seg_df, result)
-            plot_html = fig_to_html_div(fig)
-        except Exception:
-            logger.warning("Could not generate CNA plot", exc_info=True)
-            plot_html = "<p>CNA plot unavailable.</p>"
-
-        result_data = result_to_dict(result)
-        result_data["_plot_html"] = plot_html
         rid = results_store.put(result_data)
 
         return templates.TemplateResponse(
@@ -167,16 +166,9 @@ async def download_pdf(request: Request, result_id: str):
     if result_data is None:
         return HTMLResponse("Result not found or expired.", status_code=404)
 
-    # Re-generate plot as PNG for PDF
-    plot_png = None
-    try:
-        # We can't easily re-create the plot without the original seg_df,
-        # so we embed the plot PNG only if available
-        pass
-    except Exception:
-        pass
+    from ..pdf import generate_pdf
 
-    pdf_bytes = generate_pdf(result_data, plot_png=plot_png)
+    pdf_bytes = generate_pdf(result_data)
     sid = result_data.get("sample_id", "sample")
     return StreamingResponse(
         iter([pdf_bytes]),
@@ -191,7 +183,6 @@ async def result_json(request: Request, result_id: str):
     result_data = request.app.state.results.get(result_id)
     if result_data is None:
         return JSONResponse({"error": "Result not found or expired."}, status_code=404)
-    # Strip internal keys
     clean = {k: v for k, v in result_data.items() if not k.startswith("_")}
     return JSONResponse(clean)
 
@@ -209,24 +200,25 @@ async def api_analyze(
     include_splice_region: bool = Form(False),
 ):
     """JSON API endpoint for programmatic access."""
+
     try:
         maf_content = (await maf_file.read()).decode("utf-8")
         seg_content = (await seg_file.read()).decode("utf-8")
 
-        maf_df = parse_maf(maf_content)
-        seg_df = parse_seg(seg_content)
-
-        params = AnalysisParams(
-            del_threshold=del_threshold,
-            deep_del_threshold=deep_del_threshold,
-            gain_threshold=gain_threshold,
-            amp_threshold=amp_threshold,
-            vaf_threshold=vaf_threshold,
-            include_splice_region=include_splice_region,
+        result_data, _ = _run_analysis(
+            maf_content,
+            seg_content,
+            {
+                "sample_id": sample_id.strip() or None,
+                "del_threshold": del_threshold,
+                "deep_del_threshold": deep_del_threshold,
+                "gain_threshold": gain_threshold,
+                "amp_threshold": amp_threshold,
+                "vaf_threshold": vaf_threshold,
+                "include_splice_region": include_splice_region,
+            },
         )
-
-        sid = sample_id.strip() or None
-        result = analyze_sample(maf_df, seg_df, sample_id=sid, params=params)
-        return JSONResponse(result_to_dict(result))
+        clean = {k: v for k, v in result_data.items() if not k.startswith("_")}
+        return JSONResponse(clean)
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=400)
