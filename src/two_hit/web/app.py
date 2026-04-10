@@ -24,9 +24,9 @@ TEMPLATE_DIR = WEB_DIR / "templates"
 STATIC_DIR = WEB_DIR / "static"
 MAX_RESULTS = 500
 
-# Idle timeout: exit after this many seconds without a request.
-# Railway / Cloud Run will auto-restart the container on next request.
-# Set to 0 to disable.
+# Idle timeout: exit with non-zero code after this many seconds without a
+# request, so the container platform (Railway, Cloud Run) restarts the process
+# with a clean memory slate.  Set to 0 to disable.
 IDLE_TIMEOUT = int(os.environ.get("IDLE_TIMEOUT", "1800"))  # 30 min default
 
 
@@ -58,7 +58,7 @@ async def _idle_watchdog() -> None:
         idle = time.monotonic() - _last_request_time
         if idle > IDLE_TIMEOUT:
             logger.info("Idle for %.0fs (limit %ds), exiting for restart", idle, IDLE_TIMEOUT)
-            os._exit(0)
+            os._exit(1)  # non-zero so Railway restarts the container
 
 
 @asynccontextmanager
