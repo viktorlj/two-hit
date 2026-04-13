@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import os
 import time
 import uuid
@@ -16,8 +15,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from .. import __version__
-
-logger = logging.getLogger(__name__)
 
 WEB_DIR = Path(__file__).parent
 TEMPLATE_DIR = WEB_DIR / "templates"
@@ -53,11 +50,15 @@ _last_request_time: float = time.monotonic()
 
 async def _idle_watchdog() -> None:
     """Background task that exits the process after IDLE_TIMEOUT seconds of inactivity."""
+    interval = min(60, max(5, IDLE_TIMEOUT // 4))
     while True:
-        await asyncio.sleep(60)  # check every minute
+        await asyncio.sleep(interval)
         idle = time.monotonic() - _last_request_time
         if idle > IDLE_TIMEOUT:
-            logger.info("Idle for %.0fs (limit %ds), exiting for restart", idle, IDLE_TIMEOUT)
+            print(
+                f"[idle-watchdog] idle {idle:.0f}s > limit {IDLE_TIMEOUT}s, exiting for restart",
+                flush=True,
+            )
             os._exit(1)  # non-zero so Railway restarts the container
 
 
@@ -67,7 +68,7 @@ async def lifespan(app: FastAPI):
     task = None
     if IDLE_TIMEOUT > 0:
         task = asyncio.create_task(_idle_watchdog())
-        logger.info("Idle watchdog started (timeout=%ds)", IDLE_TIMEOUT)
+        print(f"[idle-watchdog] started (timeout={IDLE_TIMEOUT}s)", flush=True)
     yield
     if task:
         task.cancel()
