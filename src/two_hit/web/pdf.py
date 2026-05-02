@@ -243,7 +243,11 @@ def generate_pdf(result_data: dict, plot_png: bytes | None = None) -> bytes:
     pdf.multi_cell(
         pw,
         4,
-        "DISCLAIMER: This report is for research and clinical decision support only. "
+        "DISCLAIMER: For research use and clinical decision support only. "
+        "Not a standalone diagnostic device. Outputs may be incomplete or incorrect "
+        "and must be reviewed by qualified experts in the full clinical, laboratory, "
+        "and histopathological context. The authors assume no responsibility for "
+        "clinical decisions or other consequences of use. "
         "Biallelic inactivation calls should be confirmed by orthogonal methods. "
         "Copy number thresholds are configurable and should be validated for the "
         "specific sequencing assay used.",

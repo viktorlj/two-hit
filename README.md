@@ -24,6 +24,12 @@ Gene roles (oncogene / TSG / both) are derived from the [OncoKB cancer gene list
 - **PDF report** with embedded plot, methods, and parameter summary
 - **JSON / TSV** for programmatic use
 
+## Caveats
+
+1. **For research use and clinical decision support only.** Not a standalone diagnostic device. Outputs may be incomplete or incorrect and must be reviewed by qualified experts in the full clinical, laboratory, and histopathological context. The authors assume no responsibility for clinical decisions or other consequences of use.
+2. Biallelic inactivation calls should be confirmed by orthogonal methods when used in a clinical workflow.
+3. Copy number thresholds are configurable and should be validated for the specific sequencing assay used.
+
 ## Install
 
 ```bash
