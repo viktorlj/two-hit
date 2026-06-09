@@ -1,0 +1,4 @@
+ID	chrom	loc.start	loc.end	num.mark	seg.mean
+CASE-KRAS	12	1	133851895	450	0.05
+CASE-KRAS	17	1	81195210	300	0.01
+CASE-KRAS	7	1	159138663	500	0.00
