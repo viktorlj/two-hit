@@ -27,11 +27,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/two_hit"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/two_hit/web_demo/cases" = "two_hit/web_demo/cases"
-"src/two_hit/web_demo/templates" = "two_hit/web_demo/templates"
-"src/two_hit/web_demo/static" = "two_hit/web_demo/static"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
