@@ -18,4 +18,5 @@ RUN uv pip install --system --no-cache .
 ENV PORT=8080
 EXPOSE 8080
 
-CMD exec uvicorn two_hit.web.app:app --host 0.0.0.0 --port $PORT
+# Serve the lightweight demo app (full app lives in two_hit.web for local use)
+CMD exec uvicorn two_hit.web_demo.app:app --host 0.0.0.0 --port $PORT
