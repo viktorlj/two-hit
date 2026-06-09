@@ -1,0 +1,334 @@
+/*  molpath.css — shared design system for molpath.tools apps
+ *  Import via:  <link rel="stylesheet" href="/static/molpath.css">
+ *  Then add app-specific overrides in a second stylesheet.
+ *
+ *  Fonts: load in your HTML <head>:
+ *    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+ */
+
+/* =================================================================
+   1. Design Tokens
+   ================================================================= */
+
+:root {
+  /* --- Palette --- */
+  --mp-bg-1: #f7f6f4;
+  --mp-bg-2: #eceae6;
+  --mp-panel: #ffffff;
+  --mp-ink: #213448;
+  --mp-ink-soft: #3d5468;
+  --mp-accent: #547792;
+  --mp-accent-hover: #436178;
+  --mp-accent-2: #94b4c1;
+  --mp-border: #94b4c1;
+  --mp-danger: #8f1f1f;
+
+  /* --- Semantic --- */
+  --mp-success-bg: #e8f5e9;
+  --mp-success-border: #4caf50;
+  --mp-success-ink: #1b5e20;
+  --mp-info-bg: #e3f2fd;
+  --mp-info-border: #2196f3;
+  --mp-info-ink: #0d47a1;
+  --mp-warning-bg: #fff3e0;
+  --mp-warning-border: #ff9800;
+  --mp-warning-ink: #e65100;
+  --mp-error-bg: #fce4ec;
+  --mp-error-border: #e57373;
+  --mp-error-ink: #b71c1c;
+
+  /* --- Typography --- */
+  --mp-font: "JetBrains Mono", ui-monospace, monospace;
+  --mp-mono: var(--mp-font);
+  --mp-fs-xs: 0.75rem;
+  --mp-fs-sm: 0.84rem;
+  --mp-fs-base: 0.94rem;
+  --mp-fs-lg: 1.1rem;
+  --mp-fs-xl: clamp(1.3rem, 2.2vw, 2rem);
+
+  /* --- Spacing --- */
+  --mp-space-xs: 4px;
+  --mp-space-sm: 8px;
+  --mp-space-md: 14px;
+  --mp-space-lg: 22px;
+  --mp-space-xl: 28px;
+
+  /* --- Radii --- */
+  --mp-radius-sm: 8px;
+  --mp-radius-md: 10px;
+  --mp-radius-lg: 14px;
+
+  /* --- Shadows --- */
+  --mp-shadow-card: 0 4px 16px rgba(36, 24, 4, 0.05);
+  --mp-shadow-hover: 0 2px 8px rgba(84, 119, 146, 0.1);
+
+  /* --- Transitions --- */
+  --mp-transition: 0.15s ease;
+}
+
+
+/* =================================================================
+   2. Reset & Base
+   ================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--mp-font);
+  font-size: var(--mp-fs-base);
+  color: var(--mp-ink);
+  background: var(--mp-bg-1);
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: 700;
+  color: var(--mp-ink);
+}
+
+h1 { font-size: var(--mp-fs-xl); }
+h2 { font-size: var(--mp-fs-lg); font-weight: 600; }
+h3 { font-size: var(--mp-fs-base); font-weight: 600; }
+
+
+/* =================================================================
+   3. Layout
+   ================================================================= */
+
+.mp-layout {
+  width: 96vw;
+  max-width: 1400px;
+  margin: var(--mp-space-xl) auto 40px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.mp-background-glow {
+  position: fixed;
+  width: 40vw;
+  height: 40vw;
+  right: -10vw;
+  bottom: -15vw;
+  background: radial-gradient(circle, rgba(84, 119, 146, 0.16), transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+
+/* =================================================================
+   4. Panel (the main building block)
+   ================================================================= */
+
+.mp-panel {
+  background: var(--mp-panel);
+  border: 1px solid var(--mp-border);
+  border-radius: var(--mp-radius-lg);
+  padding: var(--mp-space-lg) var(--mp-space-xl);
+  box-shadow: var(--mp-shadow-card);
+}
+
+
+/* =================================================================
+   5. Typography helpers
+   ================================================================= */
+
+.mp-eyebrow {
+  margin: 0;
+  font-size: var(--mp-fs-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mp-accent);
+}
+
+.mp-subtitle {
+  margin: 0;
+  color: var(--mp-ink-soft);
+}
+
+.mp-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--mp-ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.mp-mono {
+  font-family: var(--mp-mono);
+}
+
+.mp-soft {
+  color: var(--mp-ink-soft);
+}
+
+
+/* =================================================================
+   6. Form controls
+   ================================================================= */
+
+input, select, button {
+  font-family: var(--mp-font);
+  font-size: var(--mp-fs-base);
+}
+
+input, select {
+  padding: 10px 11px;
+  border-radius: var(--mp-radius-sm);
+  border: 1px solid var(--mp-border);
+  background: #fff;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--mp-accent);
+  box-shadow: 0 0 0 2px rgba(84, 119, 146, 0.15);
+}
+
+button {
+  border: 1px solid var(--mp-border);
+  border-radius: var(--mp-radius-sm);
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: background var(--mp-transition), border-color var(--mp-transition);
+}
+
+button:hover { border-color: var(--mp-ink-soft); }
+
+.mp-btn-primary {
+  background: var(--mp-accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.mp-btn-primary:hover {
+  background: var(--mp-accent-hover);
+}
+
+.mp-btn-secondary {
+  background: #f3efe4;
+}
+
+.mp-btn-danger {
+  background: #f9e8e8;
+  color: var(--mp-danger);
+}
+
+
+/* =================================================================
+   7. Cards
+   ================================================================= */
+
+.mp-card {
+  border: 1px solid var(--mp-border);
+  border-radius: var(--mp-radius-md);
+  padding: 11px;
+  background: #fff;
+  transition: border-color var(--mp-transition), box-shadow var(--mp-transition);
+}
+
+.mp-card:hover {
+  border-color: var(--mp-accent);
+  box-shadow: var(--mp-shadow-hover);
+}
+
+.mp-card.active {
+  border-color: var(--mp-accent);
+}
+
+
+/* =================================================================
+   8. Alerts / banners
+   ================================================================= */
+
+.mp-alert {
+  border-radius: var(--mp-radius-md);
+  padding: var(--mp-space-md) 18px;
+  border: 1px solid;
+}
+
+.mp-alert-success { background: var(--mp-success-bg); border-color: var(--mp-success-border); color: var(--mp-success-ink); }
+.mp-alert-info    { background: var(--mp-info-bg);    border-color: var(--mp-info-border);    color: var(--mp-info-ink); }
+.mp-alert-warning { background: var(--mp-warning-bg); border-color: var(--mp-warning-border); color: var(--mp-warning-ink); }
+.mp-alert-error   { background: var(--mp-error-bg);   border-color: var(--mp-error-border);   color: var(--mp-error-ink); }
+
+.mp-warning-bar {
+  padding: var(--mp-space-sm) 10px;
+  font-size: 0.86rem;
+  border-left: 4px solid var(--mp-accent-2);
+  background: #fff3e8;
+}
+
+.mp-error-box {
+  background: #fde8e8;
+  border: 1px solid #efb6b6;
+  color: var(--mp-danger);
+  padding: 11px;
+  border-radius: var(--mp-radius-sm);
+  font-family: var(--mp-mono);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+}
+
+
+/* =================================================================
+   9. Progress / metric bars
+   ================================================================= */
+
+.mp-bar-track {
+  height: 6px;
+  background: #ece8dc;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.mp-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--mp-accent);
+  transition: width 0.3s ease;
+}
+
+.mp-bar-fill.depleted {
+  background: var(--mp-accent-2);
+}
+
+
+/* =================================================================
+   10. Utilities
+   ================================================================= */
+
+.mp-hidden { display: none; }
+
+.mp-grid { display: grid; gap: var(--mp-space-sm); }
+.mp-flex { display: flex; gap: var(--mp-space-sm); align-items: center; }
+.mp-between { justify-content: space-between; }
+
+@keyframes mp-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mp-animate-in {
+  animation: mp-fade-up 0.7s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-animate-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* =================================================================
+   11. Responsive
+   ================================================================= */
+
+@media (max-width: 700px) {
+  .mp-layout { gap: 12px; }
+  .mp-panel  { padding: var(--mp-space-md) 16px; }
+}

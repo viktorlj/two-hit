@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Report — {{ r.sample_id }} — two-hit demo{% endblock %}
+{% block content %}
+<div class="mp-panel">
+  <p class="mp-eyebrow">Analysis report (demo)</p>
+  <h1 style="margin-top: var(--mp-space-xs);">{{ r.sample_id }}</h1>
+
+  {% if note %}
+  <div class="mp-alert mp-alert-info" style="margin-top: var(--mp-space-sm);">{{ note }}</div>
+  {% endif %}
+
+  <div class="summary-stats" style="margin-top: var(--mp-space-md);">
+    <div class="stat"><span class="stat-value">{{ r.total_mutations }}</span><span class="stat-label">Mutations</span></div>
+    <div class="stat"><span class="stat-value">{{ r.total_genes_with_events }}</span><span class="stat-label">Genes</span></div>
+    <div class="stat"><span class="stat-value biallelic">{{ r.biallelic_count }}</span><span class="stat-label">Biallelic</span></div>
+    <div class="stat"><span class="stat-value oncogene">{{ r.mut_amp_count }}</span><span class="stat-label">Mut+Amp</span></div>
+  </div>
+  <div class="mp-flex" style="margin-top: var(--mp-space-md); gap: var(--mp-space-sm);">
+    <a href="/" class="mp-btn-secondary" style="text-decoration: none; font-size: var(--mp-fs-sm);">New analysis</a>
+  </div>
+</div>
+
+<div class="mp-panel">
+  <h2>Gene results</h2>
+  {% if r.gene_results %}
+  <div style="overflow-x: auto; margin-top: var(--mp-space-sm);">
+    <table class="gene-table">
+      <thead>
+        <tr><th>Gene</th><th>Role</th><th>#Mut</th><th>Best mutation</th><th>CNA</th><th>seg.mean</th><th>VAF</th><th>Status</th><th>Confidence</th></tr>
+      </thead>
+      <tbody>
+        {% for g in r.gene_results %}
+        <tr>
+          <td><strong>{{ g.hugo_symbol }}</strong></td>
+          <td>{{ g.role.value }}</td>
+          <td>{{ g.mutations | length }}</td>
+          <td>{{ g.best_mutation }}</td>
+          <td>{{ g.cna_status.value }}</td>
+          <td>{% if g.seg_mean is not none %}{{ "%.3f" | format(g.seg_mean) }}{% else %}N/A{% endif %}</td>
+          <td>{% if g.vaf_max is not none %}{{ "%.2f" | format(g.vaf_max) }}{% else %}N/A{% endif %}</td>
+          <td><span class="status-badge status-{{ g.two_hit_status.value }}">{{ g.status_label }}</span></td>
+          <td><span class="conf-badge conf-{{ g.confidence.value }}">{{ g.confidence.value }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="mp-soft" style="margin-top: var(--mp-space-sm);">No panel genes mutated in this sample — nothing to report. (The demo only analyzes its 25-gene panel.)</p>
+  {% endif %}
+</div>
+
+<div class="mp-panel">
+  <h2>Genome-wide CNA plot</h2>
+  <div class="plot-container" style="margin-top: var(--mp-space-sm); overflow-x:auto;">
+    {{ plot_svg | safe }}
+  </div>
+  <p class="mp-soft" style="font-size: var(--mp-fs-xs); margin-top: var(--mp-space-xs);">
+    Blue = deletion · Red = amplification · Orange = gain · Grey = neutral. Circles are mutations (purple = biallelic, red = mut+amp). Hover for details.
+  </p>
+</div>
+{% endblock %}

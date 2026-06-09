@@ -97,6 +97,29 @@ curl -X POST http://localhost:8000/api/analyze \
 
 Python 3.12+ · [polars](https://pola.rs) · [pydantic](https://docs.pydantic.dev) v2 · [typer](https://typer.tiangolo.com) · [FastAPI](https://fastapi.tiangolo.com) + Jinja2 · [plotly](https://plotly.com/python/) · [fpdf2](https://py-pdf.github.io/fpdf2/) · [ruff](https://docs.astral.sh/ruff/)
 
+## Demo vs. full app
+
+This repo ships two web frontends over the same analysis core:
+
+- **Full app** (`two_hit.web`) — all OncoKB genes, arbitrary uploads, interactive
+  Plotly plot, PDF export, JSON API. Heavier; intended for local use:
+
+  ```bash
+  uv run uvicorn two_hit.web.app:app --reload
+  ```
+
+- **Demo app** (`two_hit.web_demo`) — restricted to a 25-gene panel and ≤1 MB
+  uploads, server-side SVG plot, no PDF/API. Lightweight; this is what is
+  deployed at `two-hit.molpath.tools`:
+
+  ```bash
+  uv run uvicorn two_hit.web_demo.app:app --reload
+  ```
+
+The demo offers preset cases (TP53 mutation+LOH, KRAS mutation-only, EGFR
+mutation+amplification, BRCA1 compound heterozygous) so visitors can explore
+without uploading data.
+
 ## License
 
 MIT

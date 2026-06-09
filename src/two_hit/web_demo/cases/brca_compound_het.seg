@@ -1,0 +1,3 @@
+ID	chrom	loc.start	loc.end	num.mark	seg.mean
+CASE-BRCA	17	1	81195210	300	0.01
+CASE-BRCA	7	1	159138663	500	0.02

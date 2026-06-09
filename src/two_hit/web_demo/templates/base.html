@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}two-hit demo{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/molpath.css">
+  <link rel="stylesheet" href="/static/demo.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="mp-background-glow"></div>
+  <header class="site-header">
+    <div class="mp-layout" style="margin-top: var(--mp-space-sm); margin-bottom: 0;">
+      <nav class="mp-flex mp-between">
+        <a href="/" class="brand" style="text-decoration: none;">
+          <span class="brand-mark">2H</span>
+          <span class="brand-name">two-hit <span class="demo-tag">demo</span></span>
+        </a>
+      </nav>
+    </div>
+  </header>
+  <main class="mp-layout mp-animate-in">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="mp-layout" style="margin-top: 0;">
+      <p class="mp-soft" style="font-size: var(--mp-fs-xs); line-height: 1.6;">
+        two-hit demo v{{ version }} — restricted to a 25-gene panel and ≤1 MB uploads. For research use and clinical decision support only. Not a standalone diagnostic device. Outputs may be incomplete or incorrect and must be reviewed by qualified experts in the full clinical, laboratory, and histopathological context. The authors assume no responsibility for clinical decisions or other consequences of use.<br>
+        Part of <a href="https://molpath.tools" style="color: var(--mp-accent);">molpath.tools</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

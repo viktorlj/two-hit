@@ -1,0 +1,2 @@
+Hugo_Symbol	Chromosome	Start_Position	End_Position	Variant_Classification	HGVSp_Short	Tumor_Sample_Barcode	t_alt_count	t_ref_count
+KRAS	12	25398284	25398284	Missense_Mutation	p.G12D	CASE-KRAS	90	110

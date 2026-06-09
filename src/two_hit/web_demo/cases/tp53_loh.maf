@@ -1,0 +1,2 @@
+Hugo_Symbol	Chromosome	Start_Position	End_Position	Variant_Classification	HGVSp_Short	Tumor_Sample_Barcode	t_alt_count	t_ref_count
+TP53	17	7577120	7577120	Nonsense_Mutation	p.R213*	CASE-TP53-LOH	90	10

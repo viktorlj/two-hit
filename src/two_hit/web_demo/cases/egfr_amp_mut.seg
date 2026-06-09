@@ -1,0 +1,4 @@
+ID	chrom	loc.start	loc.end	num.mark	seg.mean
+CASE-EGFR	7	1	159138663	500	1.20
+CASE-EGFR	12	1	133851895	450	0.02
+CASE-EGFR	17	1	81195210	300	0.01
