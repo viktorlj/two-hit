@@ -11,7 +11,7 @@ from html import escape
 
 import polars as pl
 
-from ..models import SampleResult
+from ..models import BIALLELIC_STATUSES, AnalysisParams, SampleResult, TwoHitStatus
 
 # hg19 chromosome lengths (bp)
 HG19_CHROM_LENGTHS: dict[str, int] = {
@@ -44,20 +44,13 @@ HG19_CHROM_LENGTHS: dict[str, int] = {
 _CHROM_ORDER = list(HG19_CHROM_LENGTHS)
 _YMAX = 1.5  # clamp seg.mean to [-1.5, 1.5]
 
-_BIALLELIC = {
-    "biallelic_compound_het",
-    "biallelic_mut_loh",
-    "biallelic_mut_loh_high_vaf",
-    "homdel",
-}
-
-
 def _norm_chrom(c: str) -> str:
     c = str(c).strip().upper()
     return c[3:] if c.startswith("CHR") else c
 
 
-def _seg_color(seg_mean: float | None, params) -> str:
+def _seg_color(seg_mean: float | None, params: AnalysisParams) -> str:
+    # Branches assume del_threshold < gain_threshold < amp_threshold (AnalysisParams defaults)
     if seg_mean is None:
         return "#9aa0a6"
     if seg_mean < params.del_threshold:
@@ -69,10 +62,10 @@ def _seg_color(seg_mean: float | None, params) -> str:
     return "#9aa0a6"  # neutral (grey)
 
 
-def _mut_color(status: str) -> str:
-    if status in _BIALLELIC:
+def _mut_color(status: TwoHitStatus) -> str:
+    if status in BIALLELIC_STATUSES:
         return "#6c3483"  # biallelic (purple)
-    if status == "mut_amp":
+    if status == TwoHitStatus.MUT_AMP:
         return "#c0392b"  # mut + amp (red)
     return "#444"
 
@@ -166,8 +159,7 @@ def genome_svg(
 
     # mutation markers
     for g in result.gene_results:
-        status = g.two_hit_status.value
-        color = _mut_color(status)
+        color = _mut_color(g.two_hit_status)
         for m in g.mutations:
             chrom = _norm_chrom(m.chromosome)
             if chrom not in HG19_CHROM_LENGTHS:

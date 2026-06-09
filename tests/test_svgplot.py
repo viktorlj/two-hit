@@ -33,3 +33,10 @@ def test_genome_svg_handles_empty_segments():
     empty = seg.clear()  # same schema, zero rows
     svg = genome_svg(empty, result)
     assert svg.lstrip().startswith("<svg")
+
+
+def test_genome_svg_marks_biallelic_in_purple():
+    seg, result = _run("tp53_loh")
+    svg = genome_svg(seg, result)
+    assert 'fill="#6c3483"' in svg  # biallelic TP53 marker is purple
+    assert "TP53" in svg
