@@ -1,0 +1,62 @@
+/* two-hit demo — small layer on top of molpath.css */
+
+.demo-tag {
+  font-family: var(--mp-mono, monospace);
+  font-size: 0.55em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mp-accent);
+  border: 1px solid var(--mp-accent);
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: middle;
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--mp-space-sm);
+  margin-top: var(--mp-space-sm);
+}
+.case-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--mp-space-md);
+  border: 1px solid var(--mp-border);
+  border-radius: 8px;
+  background: var(--mp-bg-1);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.case-card:hover { border-color: var(--mp-accent); transform: translateY(-1px); }
+.case-title { font-weight: 600; color: var(--mp-ink); }
+.case-desc { font-size: var(--mp-fs-sm); color: var(--mp-soft, #666); }
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--mp-space-md);
+}
+.file-field { display: flex; flex-direction: column; gap: 4px; }
+.file-hint { font-size: var(--mp-fs-xs); color: var(--mp-soft, #888); }
+
+.summary-stats { display: flex; gap: var(--mp-space-lg); flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; }
+.stat-value { font-size: var(--mp-fs-xl); font-weight: 700; }
+.stat-value.biallelic { color: #6c3483; }
+.stat-value.oncogene { color: #c0392b; }
+.stat-label { font-size: var(--mp-fs-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--mp-soft, #888); }
+
+.gene-table { width: 100%; border-collapse: collapse; font-size: var(--mp-fs-sm); }
+.gene-table th, .gene-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--mp-border); }
+.gene-table th { font-family: var(--mp-mono, monospace); font-size: var(--mp-fs-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--mp-soft, #888); }
+
+.status-badge, .conf-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: var(--mp-fs-xs); font-family: var(--mp-mono, monospace);
+  background: var(--mp-bg-1); border: 1px solid var(--mp-border);
+}
+.conf-high { color: #1e7e34; border-color: #1e7e34; }
+.conf-medium { color: #b8860b; border-color: #b8860b; }
+.conf-low { color: #888; }

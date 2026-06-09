@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}two-hit demo{% endblock %}
+{% block content %}
+<div class="mp-panel">
+  <p class="mp-eyebrow">Biallelic inactivation analysis — demo</p>
+  <h1 style="margin-top: var(--mp-space-xs);">two-hit <span class="demo-tag">demo</span></h1>
+  <p class="mp-subtitle">A lightweight demo restricted to a 25-gene panel. Try a preset case, or upload your own MAF + SEG (≤1 MB each). For the full tool — all OncoKB genes, PDF export, larger inputs — run it locally.</p>
+
+  {% if error %}
+  <div class="mp-alert mp-alert-error" style="margin-top: var(--mp-space-md);">
+    <strong>Error:</strong> {{ error }}
+  </div>
+  {% endif %}
+
+  <h2 style="margin-top: var(--mp-space-lg);">Preset cases</h2>
+  <div class="case-grid">
+    {% for name, info in cases.items() %}
+    <a class="case-card" href="/case/{{ name }}">
+      <span class="case-title">{{ info[0] }}</span>
+      <span class="case-desc">{{ info[1] }}</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <h2 style="margin-top: var(--mp-space-lg);">Upload your own</h2>
+  <form action="/analyze" method="post" enctype="multipart/form-data" class="upload-form">
+    <div class="upload-grid">
+      <label class="file-field">
+        <span class="mp-section-title">MAF file</span>
+        <input type="file" name="maf_file" accept=".maf,.tsv,.txt" required>
+        <span class="file-hint">Somatic mutations, ≤1 MB</span>
+      </label>
+      <label class="file-field">
+        <span class="mp-section-title">SEG file</span>
+        <input type="file" name="seg_file" accept=".seg,.tsv,.txt" required>
+        <span class="file-hint">Copy number segments, ≤1 MB</span>
+      </label>
+    </div>
+    <button type="submit" class="mp-btn-primary" style="margin-top: var(--mp-space-md);">Analyze</button>
+  </form>
+
+  <p class="mp-soft" style="font-size: var(--mp-fs-xs); margin-top: var(--mp-space-md);">
+    Panel: TP53, RB1, PTEN, APC, BRCA1, BRCA2, CDKN2A, NF1, VHL, STK11, SMAD4, KEAP1, ATM, MLH1, KRAS, NRAS, BRAF, EGFR, PIK3CA, ERBB2, MET, MYC, CCND1, MDM2, CTNNB1. Off-panel genes are ignored.
+  </p>
+</div>
+{% endblock %}
