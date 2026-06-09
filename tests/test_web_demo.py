@@ -75,6 +75,29 @@ def test_analyze_valid_upload_returns_report(client):
     assert "KRAS" in r.text
 
 
+def test_analyze_multi_sample_shows_note(client):
+    maf = (
+        "Hugo_Symbol\tChromosome\tStart_Position\tEnd_Position\t"
+        "Variant_Classification\tHGVSp_Short\tTumor_Sample_Barcode\t"
+        "t_alt_count\tt_ref_count\n"
+        "KRAS\t12\t25398284\t25398284\tMissense_Mutation\tp.G12D\tSAMPLE_A\t90\t110\n"
+        "TP53\t17\t7577120\t7577120\tNonsense_Mutation\tp.R213*\tSAMPLE_B\t90\t10\n"
+    )
+    seg = (
+        "ID\tchrom\tloc.start\tloc.end\tnum.mark\tseg.mean\n"
+        "SAMPLE_A\t12\t1\t133851895\t450\t0.05\n"
+    )
+    r = client.post(
+        "/analyze",
+        files={
+            "maf_file": ("u.maf", io.BytesIO(maf.encode()), "text/plain"),
+            "seg_file": ("u.seg", io.BytesIO(seg.encode()), "text/plain"),
+        },
+    )
+    assert r.status_code == 200
+    assert "Multiple samples found" in r.text
+
+
 def test_analyze_off_panel_only_shows_note(client):
     # NOTCH1 is not in the panel -> nothing to report
     maf = (

@@ -38,6 +38,8 @@ CASES: dict[str, tuple[str, str]] = {
 
 def _render_report(request: Request, maf_src, seg_src, note: str | None = None):
     """Run the panel-restricted analysis and render the report."""
+    import polars as pl
+
     from ..analysis import analyze_sample
     from ..io import parse_maf, parse_seg
     from ..models import AnalysisParams
@@ -52,8 +54,8 @@ def _render_report(request: Request, maf_src, seg_src, note: str | None = None):
         ids = maf_df["Tumor_Sample_Barcode"].unique().to_list()
         sample_id = ids[0]
         if len(ids) > 1:
-            maf_df = maf_df.filter(pl_eq("Tumor_Sample_Barcode", sample_id))
-            note = (note + " " if note else "") + f"Multiple samples found; showing {sample_id}."
+            maf_df = maf_df.filter(pl.col("Tumor_Sample_Barcode") == sample_id)
+            note = " ".join(filter(None, [note, f"Multiple samples found; showing {sample_id}."]))
 
     result = analyze_sample(
         maf_df, seg_df, sample_id=sample_id, params=AnalysisParams(), gene_roles=PANEL
@@ -64,13 +66,6 @@ def _render_report(request: Request, maf_src, seg_src, note: str | None = None):
     return templates.TemplateResponse(
         request, "report.html", {"r": result, "plot_svg": svg, "note": note}
     )
-
-
-def pl_eq(col: str, val):
-    """Tiny helper to avoid importing polars at module load."""
-    import polars as pl
-
-    return pl.col(col) == val
 
 
 def _index(request: Request, error: str | None = None, status_code: int = 200):
@@ -97,7 +92,7 @@ async def case(request: Request, name: str):
         return _render_report(request, maf_path, seg_path)
     except Exception as e:  # noqa: BLE001
         logger.error("Case %s failed: %s", name, e, exc_info=True)
-        return _index(request, error=str(e), status_code=400)
+        return _index(request, error=str(e).split("\n")[0][:200], status_code=400)
 
 
 @router.post("/analyze", response_class=HTMLResponse)
@@ -123,4 +118,4 @@ async def analyze(
         return _render_report(request, maf_src, seg_src)
     except Exception as e:  # noqa: BLE001
         logger.error("Upload analysis failed: %s", e, exc_info=True)
-        return _index(request, error=str(e), status_code=400)
+        return _index(request, error=str(e).split("\n")[0][:200], status_code=400)
