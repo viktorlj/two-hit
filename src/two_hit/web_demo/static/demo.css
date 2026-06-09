@@ -1,5 +1,29 @@
 /* two-hit demo — small layer on top of molpath.css */
 
+/* Brand (ported from the full app's style.css; base.html relies on these) */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--mp-space-sm);
+}
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--mp-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+.brand-name {
+  font-weight: 600;
+  font-size: var(--mp-fs-lg);
+  color: var(--mp-ink);
+}
+
 .demo-tag {
   font-family: var(--mp-mono, monospace);
   font-size: 0.55em;
